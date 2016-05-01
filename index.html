@@ -1,0 +1,170 @@
+<!doctype html>
+<html ng-app="app">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="content-language" content="pt-br" />
+        <title> Previsão do tempo </title>
+
+        <!--<link rel="shortcut icon" href="app/images/favicon.ico"> -->
+
+        <link rel='stylesheet' href='app/css/bootstrap.css' />
+        <link rel='stylesheet' href='app/css/app.css' />
+
+        <script src="app/lib/angular/angular.js"></script>
+    </head>
+<body>
+        
+    <div ng-controller="WeatherCtrl">
+        
+        <div class="content top">
+            Previsão do tempo
+            <a href="#" ng-click="cidadeFavorita(city)" class="bt-favorite" title="Clique aqui e marque a cidade atual como favorita">
+                &raquo; Cidade favorita
+            </a>
+        </div>
+   
+        <form class="form-inline content margin15">            
+            <div class="container"> 
+                
+                <p> Deseja saber a previsão do tempo de outra cidade? </p>
+                <p> Selecione o estado, e informe a cidade. </p>
+                                    
+                <div class="form-group">
+                    <label for="estado" > Estado </label>                    
+                     <select class="form-control select" name="estado"  id="estado" ng-change="selectEstate(estado)"
+                        ng-model="estado" ng-options="estado.ID as estado.Nome for estado in estados" ng-init="estado=state"  >      
+                        <option value=""> Selecione </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location"> Cidade </label>
+                    <input type="text" ng-model="city" ng-keyup="pesquisaCidade(search)" class="form-control" id="city" placeholder="Cidade" autocomplete="off">
+                    <div class="sugestoes"> 
+                                            
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <input type="submit" ng-click="getWeather(city)" class="btn btn-primary" value="Buscar!" ng-click="getForecastByLocation(location)" />
+                </div>
+                
+                <div class="clear"></div>
+                
+                <div class="messages">
+                       
+                </div>                
+                
+            </div>
+        </form>
+        
+        <div class="clear"></div>        
+        
+       <span ng-if="data.cod === '200'">
+        
+       <nav class="content">
+           
+           <h4> &nbsp; &raquo; {{ data.city.name }} - {{ data.city.country }}</h4>
+            
+            <ul class="boxes">
+
+                <li ng-repeat="obj in data.list">   
+                    <div class="A">
+                         {{ parseDate(obj.dt) }}
+                    </div>
+                    <div class="B">                        
+                        <img ng-src="{{ getIcon(obj.weather[0].icon) }}" />
+                        {{ obj.temp.day }} °C <br/> 
+                        <span> {{ obj.weather[0].description | uppercase }} </span> 
+                        <br/>
+                        <span>
+                            Máx: {{ obj.temp.max }} °C<br/>
+                            Mín: {{ obj.temp.min }} °C      
+                        </span>
+                    </div>                
+                    <div class="C">
+                        <!-- Dia {{ obj.temp.day }}°C ~  --> Noite {{ obj.temp.night }}°C <br/>
+                        Vento: {{ obj.speed }} km/h <br/>
+                        Umidade {{ obj.humidity }} %
+                    </div>
+                </li>
+
+                
+            </ul>
+        </nav>
+        
+        <div class="clear"> </div>
+                
+        <div class="box box100">
+            <div class="A"> &raquo; Temperatura máxima e a mínima da semana </div>
+            <div class="B">
+                A maior temperatura dos próximos dias será de {{ objTempMaxSemana.temp.max }} °C, {{ parseDate(objTempMaxSemana.dt) }}. <br/>
+                A menor temperatura dos próximos dias será de {{ objTempMinSemana.temp.min }} °C, {{ parseDate(objTempMinSemana.dt) }}.
+            </div>
+        </div>
+        
+        <div class="clear"> </div>
+        
+        <div class="box box33 ">
+            <div class="A"> &raquo; Como será a praia no final de semana </div>
+            <div class="B" ng-if="praiaFinalSemana == true" style="color:green;">
+                Aproveite para ir na praia no final de semana! <br/>
+                A previsão de temperatura mínima é de {{ temp_praia }} °C.
+            </div>   
+            <div class="B" ng-if="praiaFinalSemana == false" style="color:#000000">
+                No final de semana, não vai ter praia! <br/>
+                A temperatura máxima será de {{ temp_praia }} °C.
+            </div> 
+        </div>
+        
+        <div class="clear"> <br/> </div>
+ 
+        <!-- Gráfico 01 - Temperatura dos dias na semana -->
+        
+        <div class="box box33" ng-if="temp_dias_semana">
+            <div class="A"> &raquo; Confira a variação de temperatura </div>
+            <div class="B" >            
+                <div
+                bar-chart 
+                bar-data='[{"key":0,"day":"30","min":"15","max":16},{"key":1,"day":"01","min":"13","max":21},{"key":2,"day":"02","min":"15","max":22},{"key":3,"day":"03","min":"17","max":23},{"key":4,"day":"04","min":"13","max":22},{"key":5,"day":"05","min":"16","max":23},{"key":6,"day":"06","min":"18","max":21}]'
+                bar-x='key'
+                bar-y='["max", "min"]'
+                bar-labels='["Temperatura Máxima", "Temperatura Mínima"]'
+                bar-colors='["#31C0BE", "#c7254e"]'>
+                </div>                
+            </div>
+        </div>
+                
+        <div class="clear"></div>
+        
+        <div class="footer">  </div>
+        
+        </span>
+        
+    </div><!-- crtl -->
+        
+        <!-- libs -->
+        <script src="app/lib/weather/country.js"></script>        
+        <script src="app/lib/angular/angular-route.js"></script>        
+        <script src="app/lib/angular/angular-resource.js"></script>
+        <script src="app/lib/angular/ngStorage.js"></script>
+        <script src="app/lib/angular/moment-with-locales.js"></script>
+        
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular-morris-chart/1.2.0/angular-morris-chart.min.js"></script>
+
+        
+        <!-- services and controllers -->
+        <script src="app/js/factory/estados.fct.js"></script>  
+        <script src="app/js/factory/weather.fct.js"></script> 
+        <script src="app/js/controller/weather.ctrl.js"></script>
+        
+        <!--<script src="app/lib/angular/angular-locale_pt.js"></script>-->
+        
+        <!-- config -->
+        <script src="app/js/app.config.js"></script>          
+
+    </body>
+</html>
